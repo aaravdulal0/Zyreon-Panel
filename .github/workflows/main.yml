@@ -14,33 +14,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y unzip rsync
-
-      - name: Extract Zyreon Panel
+      - name: Extract ZIP
+        shell: bash
         run: |
           set -e
 
+          echo "Checking ZIP..."
+          ls -lh Zyreon-Panel-Root.zip
+
+          echo "Testing ZIP..."
+          unzip -t Zyreon-Panel-Root.zip
+
+          echo "Extracting..."
           rm -rf /tmp/zyreon
           mkdir -p /tmp/zyreon
-
-          echo "Extracting ZIP..."
-          unzip -q -o "Zyreon-Panel-Root.zip" -d /tmp/zyreon
+          unzip -o Zyreon-Panel-Root.zip -d /tmp/zyreon
 
           echo "Copying files..."
           rsync -a /tmp/zyreon/ ./ \
             --exclude=".git/" \
-            --exclude=".github/workflows/extract.yml"
+            --exclude=".github/workflows/main.yml"
 
-          echo "Extraction completed."
+          echo "Done!"
 
       - name: Remove ZIP
-        run: rm -f "Zyreon-Panel-Root.zip"
+        run: rm -f Zyreon-Panel-Root.zip
 
-      - name: Commit changes
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -48,7 +51,7 @@ jobs:
           git add -A
 
           if git diff --cached --quiet; then
-            echo "No changes to commit."
+            echo "Nothing to commit"
           else
             git commit -m "Extract Zyreon Panel"
             git push
